@@ -31,7 +31,7 @@
     "dev": "vite --mode preview",
     "build-core": "tsc && vite build",
     "build-dts": "dts-bundle-generator --no-banner true --umd-module-name klinechartspro -o dist/index.d.ts src/index.ts",
-    "copy": "rm -rf ../metatrader-env/server/klinechart-pro;cp -R ./dist ../metatrader-env/server/klinechart-pro",
+    "copy": "rm -rf ../metatrader-env/server/klinechart-pro;cp -R ./dist ../metatrader-env/server/klinechart-pro && mv ../metatrader-env/server/klinechart-pro/index.d.ts ../metatrader-env/server/klinechart-pro/klinechart-pro.d.ts",
     "build": "npm run build-core && npm run build-dts && npm run copy",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
