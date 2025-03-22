@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-import { KLineData, Styles, DeepPartial } from 'klinecharts'
+import { KLineData, Styles, DeepPartial, type Indicator, type Chart, type Nullable, type TooltipFeatureStyle } from 'klinecharts'
 
 export interface SymbolInfo {
   ticker: string
@@ -71,4 +71,22 @@ export interface ChartPro {
   getSymbol(): SymbolInfo
   setPeriod(period: Period): void
   getPeriod(): Period
+  getMainIndicators(): string[]
+  setMainIndicators(indicators: string[]): void
+  getSubIndicators(): {[j:string]:string}
+  setSubIndicators(indicators: {[j:string]:string}): void
+  getChart():Chart
+}
+
+ export const DefaultIndicatorParam = {
+    visible: false,
+    indicatorName: '',
+    paneId: '',
+    calcParams: [] as Array<any>,
+  }
+
+export interface TooltipFeatureInfo {
+  paneId: string
+  indicator: Nullable<Indicator>
+  feature: TooltipFeatureStyle
 }
