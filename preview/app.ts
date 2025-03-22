@@ -1,4 +1,5 @@
-import { KLineChartPro, DefaultDatafeed } from '../src'
+import { KLineChartPro } from '../src'
+import DefaultDatafeed from './DefaultDatafeed'
 
 export default function setupApp (root: HTMLDivElement) {
   let locale = 'zh-CN'
@@ -22,8 +23,23 @@ export default function setupApp (root: HTMLDivElement) {
       type: 'ADRC',
     },
     period: { multiplier: 15, timespan: 'minute', text: '15m' },
-    subIndicators: ['VOL', 'MACD'],
+    subIndicators: [],
     datafeed: new DefaultDatafeed('fgBqakYElb8niRTDWi9WXK7XdOdVGG2E'),
   }
-  new KLineChartPro(options)
+  let pro=new KLineChartPro(options)
+  const savePersist = () => {
+    const persist = pro.getChartApi().getPersist()
+    console.log('savePersist', persist)
+    localStorage.setItem('persist', JSON.stringify(persist))
+  }
+  window.addEventListener('beforeunload', savePersist)
+  ;(window as any).savePersist = savePersist
+  window.addEventListener('load', () => {
+    const persistStr = localStorage.getItem('persist')
+    if (persistStr) {
+      const persist = JSON.parse(persistStr)
+      console.log('loadPersist', persist)
+      pro.getChartApi().setPersist(persist)
+    }
+  })
 }

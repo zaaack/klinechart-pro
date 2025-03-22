@@ -70,8 +70,8 @@ export default class KLineChartPro {
             ]
           }
           timezone={options.timezone ?? 'Asia/Shanghai'}
-          mainIndicators={options.mainIndicators ?? ['MA']}
-          subIndicators={options.subIndicators ?? ['VOL']}
+          mainIndicators={options.mainIndicators ?? []}
+          subIndicators={options.subIndicators ?? []}
           datafeed={options.datafeed}
         />
       ),

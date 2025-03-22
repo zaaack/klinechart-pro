@@ -32,7 +32,7 @@ const AlarmLine: OverlayTemplate = {
       color: '#FF0000',
     },
   },
-  createPointFigures: ({ coordinates, bounding }) => {
+  createPointFigures({ coordinates, bounding }) {
     const texts = coordinates.map((coordinate, i) => ({
       ...coordinate,
       text: `提醒`,
@@ -40,6 +40,9 @@ const AlarmLine: OverlayTemplate = {
       y: coordinate.y - 6,
       x: coordinate.x - 12,
     }))
+    this.extendData = {
+      y: coordinates[0].y,
+    }
     return [
       {
         type: 'line',

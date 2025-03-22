@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-import { KLineData, Styles, DeepPartial, type Indicator, type Chart, type Nullable, type TooltipFeatureStyle } from 'klinecharts'
+import { KLineData, Styles, DeepPartial, type Indicator, type Chart, type Nullable, type OverlayCreate, type Overlay } from 'klinecharts'
 
 export interface SymbolInfo {
   ticker: string
@@ -58,6 +58,18 @@ export interface ChartProOptions {
   datafeed: Datafeed
 }
 
+export interface IndicatorWithPanelId extends Indicator {
+  panelId: string
+}
+
+export interface Persist {
+  symbol: SymbolInfo
+  theme: string
+  period: Period
+  mainIndicators: IndicatorWithPanelId[]
+  subIndicators: IndicatorWithPanelId[]
+  overlays: Overlay[]
+}
 export interface ChartPro {
   setTheme(theme: string): void
   getTheme(): string
@@ -73,9 +85,13 @@ export interface ChartPro {
   getPeriod(): Period
   getMainIndicators(): string[]
   setMainIndicators(indicators: string[]): void
-  getSubIndicators(): {[j:string]:string}
-  setSubIndicators(indicators: {[j:string]:string}): void
-  getChart():Chart
+  getSubIndicators(): { [j: string]: string }
+  setSubIndicators(indicators: { [j: string]: string }): void
+  getOverlays(): OverlayCreate[]
+  setOverlays(overlays: OverlayCreate[]): void
+  getChart(): Chart
+  getPersist(): Persist
+  setPersist(persist: Persist): void
 }
 
  export const DefaultIndicatorParam = {
@@ -84,9 +100,3 @@ export interface ChartPro {
     paneId: '',
     calcParams: [] as Array<any>,
   }
-
-export interface TooltipFeatureInfo {
-  paneId: string
-  indicator: Nullable<Indicator>
-  feature: TooltipFeatureStyle
-}

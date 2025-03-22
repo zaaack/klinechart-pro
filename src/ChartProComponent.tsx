@@ -12,11 +12,14 @@
  * limitations under the License.
  */
 
-import { createSignal, createEffect, onMount, Show, onCleanup, startTransition, Component } from 'solid-js'
+import { createSignal, createEffect, onMount, Show, onCleanup, startTransition, Component, createMemo } from 'solid-js'
 
 import {
   init, dispose, utils, Nullable, Chart, OverlayMode, Styles,
-  TooltipIconPosition, ActionType, PaneOptions, Indicator, DomPosition, FormatDateType
+  TooltipIconPosition, ActionType, PaneOptions, Indicator, DomPosition, FormatDateType,
+  type OverlayCreate,
+  type Overlay,
+  type IndicatorCreate
 } from 'klinecharts'
 
 import lodashSet from 'lodash/set'
@@ -42,11 +45,12 @@ interface PrevSymbolPeriod {
   period: Period
 }
 
-function createIndicator (widget: Nullable<Chart>, indicatorName: string, isStack?: boolean, paneOptions?: PaneOptions): Nullable<string> {
+function createIndicator (widget: Nullable<Chart>, indicatorName: string, isStack?: boolean, paneOptions?: PaneOptions, indicatorCreate?: IndicatorCreate): Nullable<string> {
   if (indicatorName === 'VOL') {
     paneOptions = { gap: { bottom: 2 }, ...paneOptions }
   }
   return widget?.createIndicator({
+    ...indicatorCreate,
     name: indicatorName,
     // @ts-expect-error
     createTooltipDataSource: ({ indicator, defaultStyles }) => {
@@ -82,6 +86,7 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
   const [indicatorModalVisible, setIndicatorModalVisible] = createSignal(false)
   const [mainIndicators, setMainIndicators] = createSignal([...(props.mainIndicators!)])
   const [subIndicators, setSubIndicators] = createSignal<{[j:string]:string}>({})
+  let overlays: OverlayCreate[] =[]
 
   const [timezoneModalVisible, setTimezoneModalVisible] = createSignal(false)
   const [timezone, setTimezone] = createSignal<SelectDataSourceItem>({ key: props.timezone, text: translateTimezone(props.timezone, props.locale) })
@@ -100,7 +105,12 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
   const [indicatorSettingModalParams, setIndicatorSettingModalParams] = createSignal({
     visible: false, indicatorName: '', paneId: '', calcParams: [] as Array<any>
   })
-
+  function createOverlay(overlay: OverlayCreate) {
+    if (overlay) {
+      overlays.push(overlay)
+      widget!.createOverlay(overlay)
+    }
+  }
   props.ref({
     setTheme,
     getTheme: () => theme(),
@@ -120,16 +130,64 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
     getSubIndicators() {
       return subIndicators()
     },
+    getOverlays() {
+      return overlays
+    },
+    setOverlays(overlays) {
+      overlays.forEach(createOverlay)
+    },
     setMainIndicators,
     setSubIndicators,
     getChart() {
       return widget!
-    }
+    },
+
+    getPersist() {
+      return {
+        theme: theme(),
+        symbol: symbol(),
+        period: period(),
+        mainIndicators: Array.from((widget?.getIndicatorByPaneId('candle_pane') as any as Map<string, Indicator>).values()).map(i => {
+          return {
+            ...i,
+            panelId: 'candle_pane'
+          }
+        }),
+        subIndicators: Object.entries(subIndicators()).map(([name, panelId]) =>
+          {return {
+            ...Array.from((widget?.getIndicatorByPaneId(panelId) as any as Map<
+              string,
+              Indicator
+            >).values())[0],
+            panelId,
+          }}
+        ),
+        overlays: overlays.map((o) => widget?.getOverlayById(o.id!) as Overlay),
+      }
+    },
+    setPersist(persist) {
+      setTheme(persist.theme)
+      setSymbol(persist.symbol)
+      setPeriod(persist.period)
+      setMainIndicators(persist.mainIndicators.map(m=>{
+        createIndicator(widget, m.name, true, { id: 'candle_pane' },m)
+        return m.name
+      }))
+      const subIndicators: any = {}
+      persist.subIndicators.forEach((m) => {
+        subIndicators[m.name] = m.panelId
+        createIndicator(widget, m.name, true, { id: m.panelId }, m)
+      })
+      setSubIndicators(subIndicators)
+      overlays = persist.overlays
+      persist.overlays.forEach(createOverlay)
+    },
   })
 
   const documentResize = () => {
     widget?.resize()
   }
+
 
   const adjustFromTo = (period: Period, toTimestamp: number, count: number) => {
     let to = toTimestamp
@@ -268,6 +326,7 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
       get()
     })
     widget?.subscribeAction(ActionType.OnTooltipIconClick, (data) => {
+      console.log('OnTooltipIconClick', data)
       if (data.indicatorName) {
         switch (data.iconId) {
           case 'visible': {
@@ -571,12 +630,12 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
         period={period()}
         periods={props.periods}
         onAlarmClick={async () => {
-          widget?.createOverlay({
-            name: 'alarmLine', // 告警线
-            visible: true,
-            groupId: 'alarm',
-            mode: OverlayMode.Normal,
-          })
+         createOverlay({
+           name: 'alarmLine', // 告警线
+           visible: true,
+           groupId: 'alarm',
+           mode: OverlayMode.Normal,
+         })
         }}
         onMenuClick={async () => {
           try {
@@ -618,7 +677,7 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
           <DrawingBar
             locale={props.locale}
             onDrawingItemClick={(overlay) => {
-              widget?.createOverlay(overlay)
+              createOverlay(overlay)
             }}
             onModeChange={(mode) => {
               widget?.overrideOverlay({ mode: mode as OverlayMode })
@@ -628,9 +687,13 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
             }}
             onVisibleChange={(visible) => {
               widget?.overrideOverlay({ visible })
+              console.log('overlays', overlays, overlays.map(o=>{
+                return widget?.getOverlayById(o.id!)
+              }))
             }}
             onRemoveClick={(groupId) => {
               widget?.removeOverlay({ groupId })
+              overlays = overlays.filter((overlay) => overlay.groupId !== groupId)
             }}
           />
         </Show>

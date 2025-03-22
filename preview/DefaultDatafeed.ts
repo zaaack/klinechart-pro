@@ -14,7 +14,7 @@
 
 import { KLineData } from 'klinecharts'
 
-import { Datafeed, SymbolInfo, Period, DatafeedSubscribeCallback } from './types'
+import { Datafeed, SymbolInfo, Period, DatafeedSubscribeCallback } from '../src/types'
 
 
 export default class DefaultDatafeed implements Datafeed {
@@ -29,8 +29,9 @@ export default class DefaultDatafeed implements Datafeed {
   private _ws?: WebSocket
 
   async searchSymbols (search?: string): Promise<SymbolInfo[]> {
-    const response = await fetch(`https://api.polygon.io/v3/reference/tickers?apiKey=${this._apiKey}&active=true&search=${search ?? ''}`)
-    const result = await response.json()
+    // const response = await fetch(`https://api.polygon.io/v3/reference/tickers?apiKey=${this._apiKey}&active=true&search=${search ?? ''}`)
+    // const result = await response.json()
+    const result = await import('../preview/sample-data.json')
     return await (result.results || []).map((data: any) => ({
       ticker: data.ticker,
       name: data.name,
@@ -58,36 +59,36 @@ export default class DefaultDatafeed implements Datafeed {
   }
 
   subscribe (symbol: SymbolInfo, period: Period, callback: DatafeedSubscribeCallback): void {
-    if (this._prevSymbolMarket !== symbol.market) {
-      this._ws?.close()
-      this._ws = new WebSocket(`wss://delayed.polygon.io/${symbol.market}`)
-      this._ws.onopen = () => {
-        this._ws?.send(JSON.stringify({ action: 'auth', params: this._apiKey }))
-      }
-      this._ws.onmessage = event => {
-        const result = JSON.parse(event.data)
-        if (result[0].ev === 'status') {
-          if (result[0].status === 'auth_success') {
-            this._ws?.send(JSON.stringify({ action: 'subscribe', params: `T.${symbol.ticker}`}))
-          }
-        } else {
-          if ('sym' in result) {
-            callback({
-              timestamp: result.s,
-              open: result.o,
-              high: result.h,
-              low: result.l,
-              close: result.c,
-              volume: result.v,
-              turnover: result.vw
-            })
-          }
-        }
-      }
-    } else {
-      this._ws?.send(JSON.stringify({ action: 'subscribe', params: `T.${symbol.ticker}`}))
-    }
-    this._prevSymbolMarket = symbol.market
+    // if (this._prevSymbolMarket !== symbol.market) {
+    //   this._ws?.close()
+    //   this._ws = new WebSocket(`wss://delayed.polygon.io/${symbol.market}`)
+    //   this._ws.onopen = () => {
+    //     this._ws?.send(JSON.stringify({ action: 'auth', params: this._apiKey }))
+    //   }
+    //   this._ws.onmessage = event => {
+    //     const result = JSON.parse(event.data)
+    //     if (result[0].ev === 'status') {
+    //       if (result[0].status === 'auth_success') {
+    //         this._ws?.send(JSON.stringify({ action: 'subscribe', params: `T.${symbol.ticker}`}))
+    //       }
+    //     } else {
+    //       if ('sym' in result) {
+    //         callback({
+    //           timestamp: result.s,
+    //           open: result.o,
+    //           high: result.h,
+    //           low: result.l,
+    //           close: result.c,
+    //           volume: result.v,
+    //           turnover: result.vw
+    //         })
+    //       }
+    //     }
+    //   }
+    // } else {
+    //   this._ws?.send(JSON.stringify({ action: 'subscribe', params: `T.${symbol.ticker}`}))
+    // }
+    // this._prevSymbolMarket = symbol.market
   }
 
   unsubscribe(symbol: SymbolInfo, period: Period): void {
