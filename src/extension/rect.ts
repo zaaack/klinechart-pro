@@ -43,7 +43,7 @@ const rect: OverlayTemplate = {
       ]
     }
     return []
-  }
+  },
 }
 
 export default rect

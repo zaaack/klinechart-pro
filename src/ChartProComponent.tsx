@@ -81,7 +81,7 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
   const [period, setPeriod] = createSignal(props.period)
   const [indicatorModalVisible, setIndicatorModalVisible] = createSignal(false)
   const [mainIndicators, setMainIndicators] = createSignal([...(props.mainIndicators!)])
-  const [subIndicators, setSubIndicators] = createSignal({})
+  const [subIndicators, setSubIndicators] = createSignal<{[j:string]:string}>({})
 
   const [timezoneModalVisible, setTimezoneModalVisible] = createSignal(false)
   const [timezone, setTimezone] = createSignal<SelectDataSourceItem>({ key: props.timezone, text: translateTimezone(props.timezone, props.locale) })
@@ -113,7 +113,18 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
     setSymbol,
     getSymbol: () => symbol(),
     setPeriod,
-    getPeriod: () => period()
+    getPeriod: () => period(),
+    getMainIndicators() {
+      return mainIndicators()
+    },
+    getSubIndicators() {
+      return subIndicators()
+    },
+    setMainIndicators,
+    setSubIndicators,
+    getChart() {
+      return widget!
+    }
   })
 
   const documentResize = () => {
@@ -232,6 +243,7 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
     }
 
     mainIndicators().forEach(indicator => {
+
       createIndicator(widget, indicator, true, { id: 'candle_pane' })
     })
     const subIndicatorMap = {}
@@ -282,7 +294,6 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
             } else {
               const newIndicators = { ...subIndicators() }
               widget?.removeIndicator(data.paneId, data.indicatorName)
-              // @ts-expect-error
               delete newIndicators[data.indicatorName]
               setSubIndicators(newIndicators)
             }
@@ -440,21 +451,28 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
 
   return (
     <>
-      <i class="icon-close klinecharts-pro-load-icon"/>
+      <i class="icon-close klinecharts-pro-load-icon" />
       <Show when={symbolSearchModalVisible()}>
         <SymbolSearchModal
           locale={props.locale}
           datafeed={props.datafeed}
-          onSymbolSelected={symbol => { setSymbol(symbol) }}
-          onClose={() => { setSymbolSearchModalVisible(false) }}/>
+          onSymbolSelected={(symbol) => {
+            setSymbol(symbol)
+          }}
+          onClose={() => {
+            setSymbolSearchModalVisible(false)
+          }}
+        />
       </Show>
       <Show when={indicatorModalVisible()}>
         <IndicatorModal
           locale={props.locale}
           mainIndicators={mainIndicators()}
           subIndicators={subIndicators()}
-          onClose={() => { setIndicatorModalVisible(false) }}
-          onMainIndicatorChange={data => {
+          onClose={() => {
+            setIndicatorModalVisible(false)
+          }}
+          onMainIndicatorChange={(data) => {
             const newMainIndicators = [...mainIndicators()]
             if (data.added) {
               createIndicator(widget, data.name, true, { id: 'candle_pane' })
@@ -465,29 +483,30 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
             }
             setMainIndicators(newMainIndicators)
           }}
-          onSubIndicatorChange={data => {
+          onSubIndicatorChange={(data) => {
             const newSubIndicators = { ...subIndicators() }
             if (data.added) {
               const paneId = createIndicator(widget, data.name)
               if (paneId) {
-                // @ts-expect-error
                 newSubIndicators[data.name] = paneId
               }
             } else {
               if (data.paneId) {
                 widget?.removeIndicator(data.paneId, data.name)
-                // @ts-expect-error
                 delete newSubIndicators[data.name]
               }
             }
             setSubIndicators(newSubIndicators)
-          }}/>
+          }}
+        />
       </Show>
       <Show when={timezoneModalVisible()}>
         <TimezoneModal
           locale={props.locale}
           timezone={timezone()}
-          onClose={() => { setTimezoneModalVisible(false) }}
+          onClose={() => {
+            setTimezoneModalVisible(false)
+          }}
           onConfirm={setTimezone}
         />
       </Show>
@@ -495,15 +514,21 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
         <SettingModal
           locale={props.locale}
           currentStyles={utils.clone(widget!.getStyles())}
-          onClose={() => { setSettingModalVisible(false) }}
-          onChange={style => {
+          onClose={() => {
+            setSettingModalVisible(false)
+          }}
+          onChange={(style) => {
             widget?.setStyles(style)
           }}
           onRestoreDefault={(options: SelectDataSourceItem[]) => {
             const style = {}
-            options.forEach(option => {
+            options.forEach((option) => {
               const key = option.key
-              lodashSet(style, key, utils.formatValue(widgetDefaultStyles(), key))
+              lodashSet(
+                style,
+                key,
+                utils.formatValue(widgetDefaultStyles(), key)
+              )
             })
             widget?.setStyles(style)
           }}
@@ -513,17 +538,29 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
         <ScreenshotModal
           locale={props.locale}
           url={screenshotUrl()}
-          onClose={() => { setScreenshotUrl('') }}
+          onClose={() => {
+            setScreenshotUrl('')
+          }}
         />
       </Show>
       <Show when={indicatorSettingModalParams().visible}>
         <IndicatorSettingModal
           locale={props.locale}
           params={indicatorSettingModalParams()}
-          onClose={() => { setIndicatorSettingModalParams({ visible: false, indicatorName: '', paneId: '', calcParams: [] }) }}
-          onConfirm={(params)=> {
+          onClose={() => {
+            setIndicatorSettingModalParams({
+              visible: false,
+              indicatorName: '',
+              paneId: '',
+              calcParams: [],
+            })
+          }}
+          onConfirm={(params) => {
             const modalParams = indicatorSettingModalParams()
-            widget?.overrideIndicator({ name: modalParams.indicatorName, calcParams: params }, modalParams.paneId)
+            widget?.overrideIndicator(
+              { name: modalParams.indicatorName, calcParams: params },
+              modalParams.paneId
+            )
           }}
         />
       </Show>
@@ -533,42 +570,75 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
         spread={drawingBarVisible()}
         period={period()}
         periods={props.periods}
+        onAlarmClick={async () => {
+          widget?.createOverlay({
+            name: 'alarmLine', // 告警线
+            visible: true,
+            groupId: 'alarm',
+            mode: OverlayMode.Normal,
+          })
+        }}
         onMenuClick={async () => {
           try {
-            await startTransition(() => setDrawingBarVisible(!drawingBarVisible()))
+            await startTransition(() =>
+              setDrawingBarVisible(!drawingBarVisible())
+            )
             widget?.resize()
-          } catch (e) {}    
+          } catch (e) {}
         }}
-        onSymbolClick={() => { setSymbolSearchModalVisible(!symbolSearchModalVisible()) }}
+        onSymbolClick={() => {
+          setSymbolSearchModalVisible(!symbolSearchModalVisible())
+        }}
         onPeriodChange={setPeriod}
-        onIndicatorClick={() => { setIndicatorModalVisible((visible => !visible)) }}
-        onTimezoneClick={() => { setTimezoneModalVisible((visible => !visible)) }}
-        onSettingClick={() => { setSettingModalVisible((visible => !visible)) }}
+        onIndicatorClick={() => {
+          setIndicatorModalVisible((visible) => !visible)
+        }}
+        onTimezoneClick={() => {
+          setTimezoneModalVisible((visible) => !visible)
+        }}
+        onSettingClick={() => {
+          setSettingModalVisible((visible) => !visible)
+        }}
         onScreenshotClick={() => {
           if (widget) {
-            const url = widget.getConvertPictureUrl(true, 'jpeg', props.theme === 'dark' ? '#151517' : '#ffffff')
+            const url = widget.getConvertPictureUrl(
+              true,
+              'jpeg',
+              props.theme === 'dark' ? '#151517' : '#ffffff'
+            )
             setScreenshotUrl(url)
           }
         }}
       />
-      <div
-        class="klinecharts-pro-content">
+      <div class="klinecharts-pro-content">
         <Show when={loadingVisible()}>
-          <Loading/>
+          <Loading />
         </Show>
         <Show when={drawingBarVisible()}>
           <DrawingBar
             locale={props.locale}
-            onDrawingItemClick={overlay => { widget?.createOverlay(overlay) }}
-            onModeChange={mode => { widget?.overrideOverlay({ mode: mode as OverlayMode }) }}
-            onLockChange={lock => { widget?.overrideOverlay({ lock }) }}
-            onVisibleChange={visible => { widget?.overrideOverlay({ visible }) }}
-            onRemoveClick={(groupId) => { widget?.removeOverlay({ groupId }) }}/>
+            onDrawingItemClick={(overlay) => {
+              widget?.createOverlay(overlay)
+            }}
+            onModeChange={(mode) => {
+              widget?.overrideOverlay({ mode: mode as OverlayMode })
+            }}
+            onLockChange={(lock) => {
+              widget?.overrideOverlay({ lock })
+            }}
+            onVisibleChange={(visible) => {
+              widget?.overrideOverlay({ visible })
+            }}
+            onRemoveClick={(groupId) => {
+              widget?.removeOverlay({ groupId })
+            }}
+          />
         </Show>
         <div
           ref={widgetRef}
-          class='klinecharts-pro-widget'
-          data-drawing-bar-visible={drawingBarVisible()}/>
+          class="klinecharts-pro-widget"
+          data-drawing-bar-visible={drawingBarVisible()}
+        />
       </div>
     </>
   )

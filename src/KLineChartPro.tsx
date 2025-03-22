@@ -19,6 +19,7 @@ import { utils, Nullable, DeepPartial, Styles } from 'klinecharts'
 import ChartProComponent from './ChartProComponent'
 
 import { SymbolInfo, Period, ChartPro, ChartProOptions } from './types'
+import { isMobile } from './widget/utils'
 
 const Logo = (
   <svg class="logo" viewBox="0 0 80 92">
@@ -28,7 +29,7 @@ const Logo = (
   </svg>
 )
 
-export default class KLineChartPro implements ChartPro {
+export default class KLineChartPro {
   constructor (options: ChartProOptions) {
     if (utils.isString(options.container)) {
       this._container = document.getElementById(options.container as string)
@@ -39,17 +40,19 @@ export default class KLineChartPro implements ChartPro {
       this._container = options.container as HTMLElement
     }
     this._container.classList.add('klinecharts-pro')
-    this._container.setAttribute('data-theme', options.theme ?? 'light')
+    this._container.setAttribute('data-theme', options.theme ?? 'dark')
 
     render(
       () => (
         <ChartProComponent
-          ref={(chart: ChartPro) => { this._chartApi = chart }}
+          ref={(chart: ChartPro) => {
+            this._chartApi = chart
+          }}
           styles={options.styles ?? {}}
           watermark={options.watermark ?? (Logo as Node)}
-          theme={options.theme ?? 'light'}
+          theme={options.theme ?? 'dark'}
           locale={options.locale ?? 'zh-CN'}
-          drawingBarVisible={options.drawingBarVisible ?? true}
+          drawingBarVisible={options.drawingBarVisible ?? !isMobile()}
           symbol={options.symbol}
           period={options.period}
           periods={
@@ -63,16 +66,20 @@ export default class KLineChartPro implements ChartPro {
               { multiplier: 1, timespan: 'day', text: 'D' },
               { multiplier: 1, timespan: 'week', text: 'W' },
               { multiplier: 1, timespan: 'month', text: 'M' },
-              { multiplier: 1, timespan: 'year', text: 'Y' }
+              { multiplier: 1, timespan: 'year', text: 'Y' },
             ]
           }
           timezone={options.timezone ?? 'Asia/Shanghai'}
           mainIndicators={options.mainIndicators ?? ['MA']}
           subIndicators={options.subIndicators ?? ['VOL']}
-          datafeed={options.datafeed}/>
+          datafeed={options.datafeed}
+        />
       ),
       this._container
     )
+  }
+  getMainIndicators(): string[] {
+    return this._chartApi!.getMainIndicators()
   }
 
   private _container: Nullable<HTMLElement>
@@ -80,52 +87,7 @@ export default class KLineChartPro implements ChartPro {
   private _chartApi: Nullable<ChartPro> = null
 
 
-  setTheme (theme: string): void {
-    this._container?.setAttribute('data-theme', theme)
-    this._chartApi!.setTheme(theme)
-  }
-
-  getTheme (): string {
-    return this._chartApi!.getTheme()
-  }
-
-  setStyles(styles: DeepPartial<Styles>): void {
-    this._chartApi!.setStyles(styles)
-  }
-
-  getStyles(): Styles {
-    return this._chartApi!.getStyles()
-  }
-
-  setLocale (locale: string): void {
-    this._chartApi!.setLocale(locale)
-  }
-
-  getLocale (): string {
-    return this._chartApi!.getLocale()
-  }
-
-  setTimezone (timezone: string): void {
-    this._chartApi!.setTimezone(timezone)
-  }
-
-  getTimezone (): string {
-    return this._chartApi!.getTimezone()
-  }
-
-  setSymbol (symbol: SymbolInfo): void {
-    this._chartApi!.setSymbol(symbol)
-  }
-
-  getSymbol (): SymbolInfo {
-    return this._chartApi!.getSymbol()
-  }
-
-  setPeriod (period: Period): void {
-    this._chartApi!.setPeriod(period)
-  }
-
-  getPeriod (): Period {
-    return this._chartApi!.getPeriod()
+  getChartApi() {
+    return this._chartApi!;
   }
 }
