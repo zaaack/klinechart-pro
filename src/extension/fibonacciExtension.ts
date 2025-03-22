@@ -20,7 +20,7 @@ const fibonacciExtension: OverlayTemplate = {
   needDefaultPointFigure: true,
   needDefaultXAxisFigure: true,
   needDefaultYAxisFigure: true,
-  createPointFigures: ({ coordinates, overlay, precision }) => {
+  createPointFigures: ({ coordinates, overlay }) => {
     const fbLines: LineAttrs[] = []
     const texts: TextAttrs[] = []
     if (coordinates.length > 2) {

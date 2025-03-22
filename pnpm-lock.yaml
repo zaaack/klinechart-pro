@@ -9,7 +9,7 @@ importers:
   .:
     dependencies:
       klinecharts:
-        specifier: '>=9.0.0'
+        specifier: v10.0.0-alpha5
         version: 10.0.0-alpha5
       lodash:
         specifier: ^4.17.21

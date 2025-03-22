@@ -12,15 +12,16 @@
  * limitations under the License.
  */
 
-import type { OverlayTemplate } from "klinecharts"
+import { OverlayMode, type OverlayTemplate } from "klinecharts"
 
 
 const AlarmLine: OverlayTemplate = {
   name: 'alarmLine',
-  totalStep: 2,
+  totalStep: 3,
   needDefaultPointFigure: true,
   needDefaultXAxisFigure: true,
   needDefaultYAxisFigure: true,
+
   styles: {
     line: {
       color: '#FF0000',
@@ -33,6 +34,7 @@ const AlarmLine: OverlayTemplate = {
     },
   },
   createPointFigures: ({ coordinates, bounding }) => {
+    console.log('coordinates', coordinates)
     const texts = coordinates.map((coordinate, i) => ({
       ...coordinate,
       text: `提醒`,

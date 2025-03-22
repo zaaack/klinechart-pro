@@ -20,7 +20,7 @@ const fibonacciSegment: OverlayTemplate = {
   needDefaultPointFigure: true,
   needDefaultXAxisFigure: true,
   needDefaultYAxisFigure: true,
-  createPointFigures: ({ coordinates, overlay, precision }) => {
+  createPointFigures: ({ coordinates, overlay, chart }) => {
     const lines: LineAttrs[] = []
     const texts: TextAttrs[] = []
     if (coordinates.length > 1) {

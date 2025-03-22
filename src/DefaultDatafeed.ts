@@ -44,8 +44,8 @@ export default class DefaultDatafeed implements Datafeed {
   }
 
   async getHistoryKLineData (symbol: SymbolInfo, period: Period, from: number, to: number): Promise<KLineData[]> {
-    const response = await fetch(`https://api.polygon.io/v2/aggs/ticker/${symbol.ticker}/range/${period.multiplier}/${period.timespan}/${from}/${to}?apiKey=${this._apiKey}`)
-    const result = await response.json()
+    // const response = await fetch(`https://api.polygon.io/v2/aggs/ticker/${symbol.ticker}/range/${period.multiplier}/${period.timespan}/${from}/${to}?apiKey=${this._apiKey}`)
+    const result = await import('./alarm/sample-data.json')
     return await (result.results || []).map((data: any) => ({
       timestamp: data.t,
       open: data.o,
