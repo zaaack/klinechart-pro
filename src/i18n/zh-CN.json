@@ -108,7 +108,7 @@
   "candle_down_stroke": "跌空心",
   "ohlc": "OHLC",
   "area": "面积图",
-  
+
   "last_price_show": "最新价显示",
   "high_price_show": "最高价显示",
   "low_price_show": "最低价显示",
@@ -119,5 +119,6 @@
   "log": "对数轴",
   "reverse_coordinate": "倒置坐标",
   "grid_show": "网格线显示",
-  "restore_default": "恢复默认"
+  "restore_default": "恢复默认",
+  "clear_alarms": "清除价格报警"
 }

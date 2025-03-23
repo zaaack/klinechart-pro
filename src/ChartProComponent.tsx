@@ -67,6 +67,7 @@ import {
   ChartPro,
   type Persist,
 } from './types'
+import AlarmLine from './alarm/alarm-overlay'
 
 export interface ChartProComponentProps
   extends Required<Omit<ChartProOptions, 'container'>> {
@@ -787,6 +788,16 @@ const ChartProComponent: Component<ChartProComponentProps> = (props) => {
             })
             widget?.setStyles(style)
           }}
+          onClearAlarms={() => {
+            if (confirm('确定删除所有预警线？')) {
+              widget?.removeOverlay({
+                name: AlarmLine.name, // 预警线
+              })
+              setOverlays(
+                overlays().filter((overlay) => overlay.name !== AlarmLine.name)
+              )
+            }
+          }}
         />
       </Show>
       <Show when={screenshotUrl().length > 0}>
@@ -828,19 +839,19 @@ const ChartProComponent: Component<ChartProComponentProps> = (props) => {
         periods={props.periods}
         onAlarmClick={async () => {
           createOverlay({
-            name: 'alarmLine', // 告警线
+            name: AlarmLine.name, // 预警线
             visible: true,
             groupId: 'alarm',
             mode: OverlayMode.Normal,
-            onDoubleClick: (e) =>{
-              if (confirm('确定删除该告警线？')) {
+            onDoubleClick: (e) => {
+              if (confirm('确定删除该预警线？')) {
                 widget?.removeOverlay(e.overlay.id)
-                  setOverlays(
-                    overlays().filter((overlay) => overlay.id !== e.overlay.id)
-                  )
+                setOverlays(
+                  overlays().filter((overlay) => overlay.id !== e.overlay.id)
+                )
               }
               return true
-            }
+            },
           })
         }}
         onMenuClick={async () => {
