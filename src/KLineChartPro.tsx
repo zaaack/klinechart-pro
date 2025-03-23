@@ -49,7 +49,7 @@ export default class KLineChartPro {
             this._chartApi = chart
           }}
           styles={options.styles ?? {}}
-          watermark={options.watermark ?? (Logo as Node)}
+          watermark={options.watermark ?? ''}
           theme={options.theme ?? 'dark'}
           locale={options.locale ?? 'zh-CN'}
           drawingBarVisible={options.drawingBarVisible ?? !isMobile()}

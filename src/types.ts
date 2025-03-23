@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-import { KLineData, Styles, DeepPartial, type Indicator, type Chart, type Nullable, type OverlayCreate, type Overlay } from 'klinecharts'
+import { KLineData, Styles, DeepPartial, type Indicator, type Chart, type Nullable, type OverlayCreate, type Overlay, type IndicatorCreate } from 'klinecharts'
 
 export interface SymbolInfo {
   ticker: string
@@ -58,7 +58,7 @@ export interface ChartProOptions {
   datafeed: Datafeed
 }
 
-export interface IndicatorWithPanelId extends Indicator {
+export type IndicatorWithPanelId = IndicatorCreate & {
   panelId: string
 }
 
@@ -68,7 +68,7 @@ export interface Persist {
   period: Period
   mainIndicators: IndicatorWithPanelId[]
   subIndicators: IndicatorWithPanelId[]
-  overlays: Overlay[]
+  overlays: OverlayCreate[]
 }
 export interface ChartPro {
   setTheme(theme: string): void
@@ -92,6 +92,7 @@ export interface ChartPro {
   getChart(): Chart
   getPersist(): Persist
   setPersist(persist: Persist): void
+  onPersistChange(callback: (persist: Persist) => void): void
 }
 
  export const DefaultIndicatorParam = {
