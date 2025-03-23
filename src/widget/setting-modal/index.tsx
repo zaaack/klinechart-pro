@@ -57,6 +57,11 @@ const SettingModal: Component<SettingModalProps> = props => {
       buttons={[
         {
           children: i18n('clear_alarms', props.locale),
+          style:{
+            background: '#ac0000',
+            padding: '0 10px',
+            width: 'auto',
+          },
           onClick: () => {
             props.onClearAlarms()
             props.onClose()
