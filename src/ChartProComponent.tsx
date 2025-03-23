@@ -173,7 +173,7 @@ const ChartProComponent: Component<ChartProComponentProps> = (props) => {
   let handlePersistChange: Nullable<(persist: Persist) => void> = null
   const [persistChange, triggerPersistChange] = createSignal(0)
   let handlePersistChangeTimer: any
-  let persistFromSet: Persist
+  let lastPersist: Persist
   createEffect(() => {
     // 触发getter进行监听
     chartPro.getPersist()
@@ -189,9 +189,10 @@ const ChartProComponent: Component<ChartProComponentProps> = (props) => {
       if (handlePersistChange) {
         const persist = chartPro.getPersist()
         if (
-          JSON.stringify(chartPro.getPersist()) !== JSON.stringify(persistFromSet)
+          JSON.stringify(chartPro.getPersist()) !== JSON.stringify(lastPersist)
         ) {
           handlePersistChange(persist)
+          lastPersist = persist
         }
       }
     }, 1000)
@@ -286,7 +287,7 @@ const ChartProComponent: Component<ChartProComponentProps> = (props) => {
       }
     },
     async setPersist(persist) {
-      persistFromSet = persist
+      lastPersist = persist
 
       setTheme(persist.theme)
       setSymbol(persist.symbol)
