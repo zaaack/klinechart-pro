@@ -832,6 +832,15 @@ const ChartProComponent: Component<ChartProComponentProps> = (props) => {
             visible: true,
             groupId: 'alarm',
             mode: OverlayMode.Normal,
+            onDoubleClick: (e) =>{
+              if (confirm('确定删除该告警线？')) {
+                widget?.removeOverlay(e.overlay.id)
+                  setOverlays(
+                    overlays().filter((overlay) => overlay.id !== e.overlay.id)
+                  )
+              }
+              return true
+            }
           })
         }}
         onMenuClick={async () => {
