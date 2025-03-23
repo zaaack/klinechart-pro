@@ -286,8 +286,12 @@ const ChartProComponent: Component<ChartProComponentProps> = (props) => {
     },
     async setPersist(persist) {
       setTheme(persist.theme)
-      setSymbol(persist.symbol)
-      setPeriod(persist.period)
+      if (persist.symbol.ticker !== symbol().ticker) {
+        setSymbol(persist.symbol)
+      }
+      if (persist.period.text !== period().text) {
+        setPeriod(persist.period)
+      }
       // clear indicators
       mainIndicators().forEach((name) => {
         widget?.removeIndicator('candle_pane', name)
@@ -540,7 +544,7 @@ const ChartProComponent: Component<ChartProComponentProps> = (props) => {
     // 移动overlay时触发保存persist
     const canvas = document.querySelectorAll('canvas').item(1)
     function savePersist() {
-        triggerPersistChange((i) => i + 1)
+      triggerPersistChange((i) => i + 1)
     }
     canvas.addEventListener('mouseup', savePersist)
     canvas.addEventListener('touchend', savePersist)
