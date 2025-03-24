@@ -56,7 +56,6 @@ export interface ChartProOptions {
   mainIndicators?: string[]
   subIndicators?: string[]
   datafeed: Datafeed
-  persist?: Persist
   onPersistChange?: (persist: Persist) => void
   onRequestPersist?: (symbol:string) => void
 }

@@ -21,6 +21,7 @@ import {
   startTransition,
   Component,
   createMemo,
+  on,
 } from 'solid-js'
 
 import {
@@ -69,7 +70,7 @@ import {
 } from './types'
 import AlarmLine from './alarm/alarm-overlay'
 
-type NullableProps = 'persist'|'onPersistChange'|'onRequestPersist'
+type NullableProps = 'onPersistChange'|'onRequestPersist'
 export interface ChartProComponentProps
   extends Required<Omit<ChartProOptions, 'container' | NullableProps>>,
     Pick<ChartProOptions, NullableProps> {
@@ -175,17 +176,8 @@ const ChartProComponent: Component<ChartProComponentProps> = (props) => {
   }
   const [persistChange, triggerPersistChange] = createSignal(0)
   let handlePersistChangeTimer: any
-  let lastPersist: string = JSON.stringify(props.persist)
-  createEffect(() =>{
-    props.onRequestPersist?.(symbol().ticker)
-  })
-  createEffect(() => {
-    // 触发getter进行监听
-    period()
-    mainIndicators()
-    subIndicators()
-    overlays()
-    persistChange()
+  let lastPersist: string
+  createEffect(on([period, mainIndicators, subIndicators, overlays, persistChange],() => {
     if (handlePersistChangeTimer) {
       clearTimeout(handlePersistChangeTimer)
     }
@@ -193,13 +185,13 @@ const ChartProComponent: Component<ChartProComponentProps> = (props) => {
     handlePersistChangeTimer = setTimeout(() => {
       if (props.onPersistChange) {
         const persist = chartPro.getPersist()
-        if (JSON.stringify(persist) !== lastPersist) {
+        if (lastPersist && JSON.stringify(persist) !== lastPersist) {
           props.onPersistChange(persist)
           lastPersist = JSON.stringify(persist)
         }
       }
     }, 1000)
-  })
+  }, {defer: true}))
   const chartPro: ChartPro = {
     setTheme,
     getTheme: () => theme(),
@@ -715,6 +707,11 @@ const ChartProComponent: Component<ChartProComponentProps> = (props) => {
           datafeed={props.datafeed}
           onSymbolSelected={(symbol) => {
             setSymbol(symbol)
+            overlays().forEach((overlay) => {
+              widget?.removeOverlay(overlay)
+            })
+            setOverlays([])
+            props.onRequestPersist?.(symbol.ticker)
           }}
           onClose={() => {
             setSymbolSearchModalVisible(false)
