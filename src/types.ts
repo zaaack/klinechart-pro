@@ -58,7 +58,7 @@ export interface ChartProOptions {
   datafeed: Datafeed
   persist?: Persist
   onPersistChange?: (persist: Persist) => void
-  onRequestPersist?: () => void
+  onRequestPersist?: (symbol:string) => void
 }
 
 export type IndicatorWithPanelId = IndicatorCreate & {

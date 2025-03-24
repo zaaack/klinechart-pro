@@ -177,8 +177,7 @@ const ChartProComponent: Component<ChartProComponentProps> = (props) => {
   let handlePersistChangeTimer: any
   let lastPersist: string = JSON.stringify(props.persist)
   createEffect(() =>{
-    symbol()
-    props.onRequestPersist?.()
+    props.onRequestPersist?.(symbol().ticker)
   })
   createEffect(() => {
     // 触发getter进行监听
