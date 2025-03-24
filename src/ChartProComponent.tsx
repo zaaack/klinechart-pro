@@ -69,8 +69,10 @@ import {
 } from './types'
 import AlarmLine from './alarm/alarm-overlay'
 
+type NullableProps = 'persist'|'onPersistChange'|'onRequestPersist'
 export interface ChartProComponentProps
-  extends Required<Omit<ChartProOptions, 'container'>> {
+  extends Required<Omit<ChartProOptions, 'container' | NullableProps>>,
+    Pick<ChartProOptions, NullableProps> {
   ref: (chart: ChartPro) => void
 }
 
@@ -171,13 +173,16 @@ const ChartProComponent: Component<ChartProComponentProps> = (props) => {
       setOverlays(overlays().concat(widget?.getOverlayById(id) ?? overlay))
     }
   }
-  let handlePersistChange: Nullable<(persist: Persist) => void> = null
   const [persistChange, triggerPersistChange] = createSignal(0)
   let handlePersistChangeTimer: any
-  let lastPersist: string
+  let lastPersist: string = JSON.stringify(props.persist)
+  createEffect(() =>{
+    symbol()
+    props.onRequestPersist?.()
+  })
   createEffect(() => {
     // 触发getter进行监听
-    chartPro.getPersist()
+    period()
     mainIndicators()
     subIndicators()
     overlays()
@@ -187,10 +192,10 @@ const ChartProComponent: Component<ChartProComponentProps> = (props) => {
     }
     // 初始化 persist
     handlePersistChangeTimer = setTimeout(() => {
-      if (handlePersistChange) {
+      if (props.onPersistChange) {
         const persist = chartPro.getPersist()
         if (JSON.stringify(persist) !== lastPersist) {
-          handlePersistChange(persist)
+          props.onPersistChange(persist)
           lastPersist = JSON.stringify(persist)
         }
       }
@@ -232,9 +237,6 @@ const ChartProComponent: Component<ChartProComponentProps> = (props) => {
       return widget!
     },
 
-    onPersistChange(callback) {
-      handlePersistChange = callback
-    },
     getPersist() {
       const mainIndicatorsMap =
         (widget?.getIndicatorByPaneId('candle_pane') as any as Map<

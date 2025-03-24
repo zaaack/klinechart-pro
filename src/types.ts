@@ -56,6 +56,9 @@ export interface ChartProOptions {
   mainIndicators?: string[]
   subIndicators?: string[]
   datafeed: Datafeed
+  persist?: Persist
+  onPersistChange?: (persist: Persist) => void
+  onRequestPersist?: () => void
 }
 
 export type IndicatorWithPanelId = IndicatorCreate & {
@@ -92,7 +95,6 @@ export interface ChartPro {
   getChart(): Chart
   getPersist(): Persist
   setPersist(persist: Persist): void
-  onPersistChange(callback: (persist: Persist) => void): void
 }
 
  export const DefaultIndicatorParam = {

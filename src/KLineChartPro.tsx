@@ -45,6 +45,7 @@ export default class KLineChartPro {
     render(
       () => (
         <ChartProComponent
+        {...options}
           ref={(chart: ChartPro) => {
             this._chartApi = chart
           }}
