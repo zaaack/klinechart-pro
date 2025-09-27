@@ -14,7 +14,7 @@
 
 import { render } from 'solid-js/web'
 
-import { utils, Nullable, DeepPartial, Styles } from 'klinecharts'
+import { utils, Nullable, DeepPartial, Styles, type IndicatorCreate } from 'klinecharts'
 
 import ChartProComponent from './ChartProComponent'
 
@@ -30,7 +30,7 @@ const Logo = (
 )
 
 export default class KLineChartPro {
-  constructor (options: ChartProOptions) {
+  constructor(options: ChartProOptions) {
     if (utils.isString(options.container)) {
       this._container = document.getElementById(options.container as string)
       if (!this._container) {
@@ -45,7 +45,7 @@ export default class KLineChartPro {
     render(
       () => (
         <ChartProComponent
-        {...options}
+          {...options}
           ref={(chart: ChartPro) => {
             this._chartApi = chart
           }}
@@ -79,7 +79,7 @@ export default class KLineChartPro {
       this._container
     )
   }
-  getMainIndicators(): string[] {
+  getMainIndicators(): IndicatorCreate[] {
     return this._chartApi!.getMainIndicators()
   }
 
@@ -87,8 +87,7 @@ export default class KLineChartPro {
 
   private _chartApi: Nullable<ChartPro> = null
 
-
   getChartApi() {
-    return this._chartApi!;
+    return this._chartApi!
   }
 }

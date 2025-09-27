@@ -222,7 +222,7 @@ const ChartProComponent: Component<ChartProComponentProps> = (props) => {
         symbol: symbol(),
         period: period(),
         mainIndicators: mainIndicators()
-          .map((name) => mainIndicatorsMap.get(name)!)
+          .map((name) => mainIndicatorsMap.get(name.name)!)
           .filter(Boolean)
           .map((i) => {
             return {
@@ -271,7 +271,7 @@ const ChartProComponent: Component<ChartProComponentProps> = (props) => {
       }
       // clear indicators
       mainIndicators().forEach((name) => {
-        widget?.removeIndicator('candle_pane', name)
+        widget?.removeIndicator('candle_pane', name.name)
       })
       const oldSubIndicators = subIndicators()
       for (const name in oldSubIndicators) {
@@ -281,7 +281,7 @@ const ChartProComponent: Component<ChartProComponentProps> = (props) => {
       setMainIndicators(
         persist.mainIndicators.map((m) => {
           createIndicator(widget, m.name, true, { id: 'candle_pane' }, m)
-          return m.name
+          return m
         })
       )
       const newSubIndicators: any = {}
@@ -289,7 +289,7 @@ const ChartProComponent: Component<ChartProComponentProps> = (props) => {
         newSubIndicators[m.name] = m.panelId
         createIndicator(widget, m.name, true, { id: m.panelId }, m)
       })
-      this.setSubIndicators(newSubIndicators)
+      setSubIndicators(newSubIndicators)
       overlays().forEach((o) => {
         widget?.removeOverlay(o.id!)
       })
@@ -468,7 +468,7 @@ const ChartProComponent: Component<ChartProComponentProps> = (props) => {
     }
 
     mainIndicators().forEach((indicator) => {
-      createIndicator(widget, indicator, true, { id: 'candle_pane' })
+      createIndicator(widget, indicator.name, true, { id: 'candle_pane' }, indicator)
     })
     const subIndicatorMap = {}
     props.subIndicators!.forEach((indicator) => {
@@ -733,7 +733,7 @@ const ChartProComponent: Component<ChartProComponentProps> = (props) => {
       <Show when={indicatorModalVisible()}>
         <IndicatorModal
           locale={props.locale}
-          mainIndicators={mainIndicators()}
+          mainIndicators={mainIndicators().map(i=>i.name)}
           subIndicators={subIndicators()}
           onClose={() => {
             setIndicatorModalVisible(false)
@@ -742,10 +742,10 @@ const ChartProComponent: Component<ChartProComponentProps> = (props) => {
             const newMainIndicators = [...mainIndicators()]
             if (data.added) {
               createIndicator(widget, data.name, true, { id: 'candle_pane' })
-              newMainIndicators.push(data.name)
+              newMainIndicators.push(data)
             } else {
               widget?.removeIndicator('candle_pane', data.name)
-              newMainIndicators.splice(newMainIndicators.indexOf(data.name), 1)
+              newMainIndicators.splice(newMainIndicators.findIndex(f=>f.name === data.name), 1)
             }
             setMainIndicators(newMainIndicators)
           }}
