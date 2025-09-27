@@ -70,7 +70,7 @@ import {
 } from './types'
 import AlarmLine from './alarm/alarm-overlay'
 
-type NullableProps = 'onPersistChange'|'onRequestPersist'
+type NullableProps = 'onPersistChange'|'onRequestPersist'|'persist'
 export interface ChartProComponentProps
   extends Required<Omit<ChartProOptions, 'container' | NullableProps>>,
     Pick<ChartProOptions, NullableProps> {
@@ -174,24 +174,7 @@ const ChartProComponent: Component<ChartProComponentProps> = (props) => {
       setOverlays(overlays().concat(widget?.getOverlayById(id) ?? overlay))
     }
   }
-  const [persistChange, triggerPersistChange] = createSignal(0)
-  let handlePersistChangeTimer: any
-  let lastPersist: string
-  createEffect(on([period, mainIndicators, subIndicators, overlays, persistChange],() => {
-    if (handlePersistChangeTimer) {
-      clearTimeout(handlePersistChangeTimer)
-    }
-    // 初始化 persist
-    handlePersistChangeTimer = setTimeout(() => {
-      if (props.onPersistChange) {
-        const persist = chartPro.getPersist()
-        if (JSON.stringify(persist) !== lastPersist) {
-          props.onPersistChange(persist)
-          lastPersist = JSON.stringify(persist)
-        }
-      }
-    }, 1000)
-  }, {defer: true}))
+
   const chartPro: ChartPro = {
     setTheme,
     getTheme: () => theme(),
@@ -278,7 +261,7 @@ const ChartProComponent: Component<ChartProComponentProps> = (props) => {
         }),
       }
     },
-    async setPersist(persist) {
+    setPersist(persist) {
       setTheme(persist.theme)
       if (persist.symbol.ticker !== symbol().ticker) {
         setSymbol(persist.symbol)
@@ -316,6 +299,35 @@ const ChartProComponent: Component<ChartProComponentProps> = (props) => {
     },
   }
   props.ref(chartPro)
+
+  const [persistChange, triggerPersistChange] = createSignal(0)
+  let handlePersistChangeTimer: any
+  let lastPersist: string
+  if (props.persist) {
+    chartPro.setPersist(props.persist)
+  }
+  createEffect(
+    on(
+      [period, mainIndicators, subIndicators, overlays, persistChange],
+      () => {
+        if (handlePersistChangeTimer) {
+          clearTimeout(handlePersistChangeTimer)
+        }
+        // 初始化 persist
+        handlePersistChangeTimer = setTimeout(() => {
+          if (props.onPersistChange) {
+            const persist = chartPro.getPersist()
+            if (JSON.stringify(persist) !== lastPersist) {
+              props.onPersistChange(persist)
+              lastPersist = JSON.stringify(persist)
+            }
+          }
+        }, 1000)
+      },
+      { defer: true }
+    )
+  )
+
   const documentResize = () => {
     widget?.resize()
   }
