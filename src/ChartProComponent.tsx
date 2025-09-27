@@ -301,11 +301,8 @@ const ChartProComponent: Component<ChartProComponentProps> = (props) => {
   props.ref(chartPro)
 
   const [persistChange, triggerPersistChange] = createSignal(0)
-  let handlePersistChangeTimer: any
   let lastPersist: string
-  if (props.persist) {
-    chartPro.setPersist(props.persist)
-  }
+  let handlePersistChangeTimer: any
   createEffect(
     on(
       [period, mainIndicators, subIndicators, overlays, persistChange],
@@ -479,6 +476,10 @@ const ChartProComponent: Component<ChartProComponentProps> = (props) => {
       }
     })
     setSubIndicators(subIndicatorMap)
+    // 设置 persist
+     if (props.persist) {
+       chartPro.setPersist(props.persist)
+     }
     widget?.loadMore((timestamp) => {
       loading = true
       const get = async () => {
