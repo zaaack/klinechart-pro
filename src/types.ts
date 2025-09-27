@@ -53,7 +53,7 @@ export interface ChartProOptions {
   period: Period
   periods?: Period[]
   timezone?: string
-  mainIndicators?: IndicatorCreate[]
+  mainIndicators?: string[]
   subIndicators?: string[]
   datafeed: Datafeed
   persist?: Persist | null
@@ -86,8 +86,8 @@ export interface ChartPro {
   getSymbol(): SymbolInfo
   setPeriod(period: Period): void
   getPeriod(): Period
-  getMainIndicators(): IndicatorCreate[]
-  setMainIndicators(indicators: IndicatorCreate[]): void
+  getMainIndicators(): string[]
+  setMainIndicators(indicators: string[]): void
   getSubIndicators(): { [j: string]: string }
   setSubIndicators(indicators: { [j: string]: string }): void
   getOverlays(): OverlayCreate[]

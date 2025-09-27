@@ -222,7 +222,7 @@ const ChartProComponent: Component<ChartProComponentProps> = (props) => {
         symbol: symbol(),
         period: period(),
         mainIndicators: mainIndicators()
-          .map((name) => mainIndicatorsMap.get(name.name)!)
+          .map((name) => mainIndicatorsMap.get(name)!)
           .filter(Boolean)
           .map((i) => {
             return {
@@ -271,7 +271,7 @@ const ChartProComponent: Component<ChartProComponentProps> = (props) => {
       }
       // clear indicators
       mainIndicators().forEach((name) => {
-        widget?.removeIndicator('candle_pane', name.name)
+        widget?.removeIndicator('candle_pane', name)
       })
       const oldSubIndicators = subIndicators()
       for (const name in oldSubIndicators) {
@@ -281,7 +281,7 @@ const ChartProComponent: Component<ChartProComponentProps> = (props) => {
       setMainIndicators(
         persist.mainIndicators.map((m) => {
           createIndicator(widget, m.name, true, { id: 'candle_pane' }, m)
-          return m
+          return m.name
         })
       )
       const newSubIndicators: any = {}
@@ -465,7 +465,7 @@ const ChartProComponent: Component<ChartProComponentProps> = (props) => {
     }
 
     mainIndicators().forEach((indicator) => {
-      createIndicator(widget, indicator.name, true, { id: 'candle_pane' }, indicator)
+      createIndicator(widget, indicator, true, { id: 'candle_pane' })
     })
     const subIndicatorMap = {}
     props.subIndicators!.forEach((indicator) => {
@@ -734,7 +734,7 @@ const ChartProComponent: Component<ChartProComponentProps> = (props) => {
       <Show when={indicatorModalVisible()}>
         <IndicatorModal
           locale={props.locale}
-          mainIndicators={mainIndicators().map(i=>i.name)}
+          mainIndicators={mainIndicators()}
           subIndicators={subIndicators()}
           onClose={() => {
             setIndicatorModalVisible(false)
@@ -743,10 +743,10 @@ const ChartProComponent: Component<ChartProComponentProps> = (props) => {
             const newMainIndicators = [...mainIndicators()]
             if (data.added) {
               createIndicator(widget, data.name, true, { id: 'candle_pane' })
-              newMainIndicators.push(data)
+              newMainIndicators.push(data.name)
             } else {
               widget?.removeIndicator('candle_pane', data.name)
-              newMainIndicators.splice(newMainIndicators.findIndex(f=>f.name === data.name), 1)
+              newMainIndicators.splice(newMainIndicators.indexOf(data.name), 1)
             }
             setMainIndicators(newMainIndicators)
           }}

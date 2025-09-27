@@ -79,7 +79,7 @@ export default class KLineChartPro {
       this._container
     )
   }
-  getMainIndicators(): IndicatorCreate[] {
+  getMainIndicators(): string[] {
     return this._chartApi!.getMainIndicators()
   }
 
