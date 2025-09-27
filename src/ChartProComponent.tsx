@@ -185,7 +185,7 @@ const ChartProComponent: Component<ChartProComponentProps> = (props) => {
     handlePersistChangeTimer = setTimeout(() => {
       if (props.onPersistChange) {
         const persist = chartPro.getPersist()
-        if (lastPersist && JSON.stringify(persist) !== lastPersist) {
+        if (JSON.stringify(persist) !== lastPersist) {
           props.onPersistChange(persist)
           lastPersist = JSON.stringify(persist)
         }
