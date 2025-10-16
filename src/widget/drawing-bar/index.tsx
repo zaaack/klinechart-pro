@@ -31,6 +31,8 @@ export interface DrawingBarProps {
   onLockChange: (lock: boolean) => void
   onVisibleChange: (visible: boolean) => void
   onRemoveClick: (groupId: string) => void
+  onAlarmClick: () => void
+  onTrendLineClick: () => void
 }
 
 const GROUP_ID = 'drawing_tools'
@@ -64,61 +66,101 @@ const DrawingBar: Component<DrawingBarProps> = props => {
   const modes = createMemo(() => createMagnetOptions(props.locale))
 
   return (
-    <div
-      class="klinecharts-pro-drawing-bar">
-      {
-        overlays().map(item => (
+    <div class="klinecharts-pro-drawing-bar">
+      <div class="item">
+        <span
+          style="width:32px;height:32px"
+          onClick={() => {
+            props.onAlarmClick()
+          }}
+        >
+          <Icon name="alarm" />
+        </span>
+      </div>
+      <div class="item">
+        <span
+          style="width:32px;height:32px"
+          onClick={() => {
+            props.onTrendLineClick()
+          }}
+        >
+          <Icon name="trendLine" />
+        </span>
+      </div>
+      <span class="split-line" />
+      {overlays().map((item) => (
+        <div
+          class="item"
+          tabIndex={0}
+          onBlur={() => {
+            setPopoverKey('')
+          }}
+        >
+          <span
+            style="width:32px;height:32px"
+            onClick={() => {
+              props.onDrawingItemClick({
+                groupId: GROUP_ID,
+                name: item.icon,
+                visible: visible(),
+                lock: lock(),
+                mode: mode() as OverlayMode,
+              })
+            }}
+          >
+            <Icon name={item.icon} />
+          </span>
           <div
-            class="item"
-            tabIndex={0}
-            onBlur={() => { setPopoverKey('') }}>
-            <span
-              style="width:32px;height:32px"
-              onClick={() => { props.onDrawingItemClick({ groupId: GROUP_ID, name: item.icon, visible: visible(), lock: lock(), mode: mode() as OverlayMode }) }}>
-              <Icon name={item.icon} />
-            </span>
-            <div
-              class="icon-arrow"
-              onClick={() => {
-                if (item.key === popoverKey()) {
-                  setPopoverKey('')
-                } else {
-                  setPopoverKey(item.key)
-                }
-              }}>
-              <svg
-                class={item.key === popoverKey() ? 'rotate' : ''}
-                viewBox="0 0 4 6">
-                <path d="M1.07298,0.159458C0.827521,-0.0531526,0.429553,-0.0531526,0.184094,0.159458C-0.0613648,0.372068,-0.0613648,0.716778,0.184094,0.929388L2.61275,3.03303L0.260362,5.07061C0.0149035,5.28322,0.0149035,5.62793,0.260362,5.84054C0.505822,6.05315,0.903789,6.05315,1.14925,5.84054L3.81591,3.53075C4.01812,3.3556,4.05374,3.0908,3.92279,2.88406C3.93219,2.73496,3.87113,2.58315,3.73964,2.46925L1.07298,0.159458Z" stroke="none" stroke-opacity="0"/>
-              </svg>
-            </div>
-            {
-              item.key === popoverKey() && (
-                <List class="list">
-                  {
-                    item.list.map(data => (
-                      <li
-                        onClick={() => {
-                          item.setter(data.key)
-                          props.onDrawingItemClick({ name: data.key, lock: lock(), mode: mode() as OverlayMode })
-                          setPopoverKey('')
-                        }}>
-                        <Icon name={data.key}/>
-                        <span style="padding-left:8px">{data.text}</span>
-                      </li>
-                    ))
-                  }
-                </List>
-              )
-            }
+            class="icon-arrow"
+            onClick={() => {
+              if (item.key === popoverKey()) {
+                setPopoverKey('')
+              } else {
+                setPopoverKey(item.key)
+              }
+            }}
+          >
+            <svg
+              class={item.key === popoverKey() ? 'rotate' : ''}
+              viewBox="0 0 4 6"
+            >
+              <path
+                d="M1.07298,0.159458C0.827521,-0.0531526,0.429553,-0.0531526,0.184094,0.159458C-0.0613648,0.372068,-0.0613648,0.716778,0.184094,0.929388L2.61275,3.03303L0.260362,5.07061C0.0149035,5.28322,0.0149035,5.62793,0.260362,5.84054C0.505822,6.05315,0.903789,6.05315,1.14925,5.84054L3.81591,3.53075C4.01812,3.3556,4.05374,3.0908,3.92279,2.88406C3.93219,2.73496,3.87113,2.58315,3.73964,2.46925L1.07298,0.159458Z"
+                stroke="none"
+                stroke-opacity="0"
+              />
+            </svg>
           </div>
-        ))
-      }
-      <span class="split-line"/>
+          {item.key === popoverKey() && (
+            <List class="list">
+              {item.list.map((data) => (
+                <li
+                  onClick={() => {
+                    item.setter(data.key)
+                    props.onDrawingItemClick({
+                      name: data.key,
+                      lock: lock(),
+                      mode: mode() as OverlayMode,
+                    })
+                    setPopoverKey('')
+                  }}
+                >
+                  <Icon name={data.key} />
+                  <span style="padding-left:8px">{data.text}</span>
+                </li>
+              ))}
+            </List>
+          )}
+        </div>
+      ))}
+      <span class="split-line" />
       <div
         class="item"
         tabIndex={0}
-        onBlur={() => { setPopoverKey('') }}>
+        onBlur={() => {
+          setPopoverKey('')
+        }}
+      >
         <span
           style="width:32px;height:32px"
           onClick={() => {
@@ -128,12 +170,19 @@ const DrawingBar: Component<DrawingBarProps> = props => {
             }
             setMode(currentMode)
             props.onModeChange(currentMode)
-          }}>
-          {
-            modeIcon() === 'weak_magnet'
-              ? (mode() === 'weak_magnet' ? <Icon name="weak_magnet" class="selected"/> : <Icon name="weak_magnet"/>) 
-              : (mode() === 'strong_magnet' ? <Icon name="strong_magnet" class="selected"/> : <Icon name="strong_magnet"/>)
-          }
+          }}
+        >
+          {modeIcon() === 'weak_magnet' ? (
+            mode() === 'weak_magnet' ? (
+              <Icon name="weak_magnet" class="selected" />
+            ) : (
+              <Icon name="weak_magnet" />
+            )
+          ) : mode() === 'strong_magnet' ? (
+            <Icon name="strong_magnet" class="selected" />
+          ) : (
+            <Icon name="strong_magnet" />
+          )}
         </span>
         <div
           class="icon-arrow"
@@ -143,68 +192,69 @@ const DrawingBar: Component<DrawingBarProps> = props => {
             } else {
               setPopoverKey('mode')
             }
-          }}>
+          }}
+        >
           <svg
             class={popoverKey() === 'mode' ? 'rotate' : ''}
-            viewBox="0 0 4 6">
-            <path d="M1.07298,0.159458C0.827521,-0.0531526,0.429553,-0.0531526,0.184094,0.159458C-0.0613648,0.372068,-0.0613648,0.716778,0.184094,0.929388L2.61275,3.03303L0.260362,5.07061C0.0149035,5.28322,0.0149035,5.62793,0.260362,5.84054C0.505822,6.05315,0.903789,6.05315,1.14925,5.84054L3.81591,3.53075C4.01812,3.3556,4.05374,3.0908,3.92279,2.88406C3.93219,2.73496,3.87113,2.58315,3.73964,2.46925L1.07298,0.159458Z" stroke="none" stroke-opacity="0"/>
+            viewBox="0 0 4 6"
+          >
+            <path
+              d="M1.07298,0.159458C0.827521,-0.0531526,0.429553,-0.0531526,0.184094,0.159458C-0.0613648,0.372068,-0.0613648,0.716778,0.184094,0.929388L2.61275,3.03303L0.260362,5.07061C0.0149035,5.28322,0.0149035,5.62793,0.260362,5.84054C0.505822,6.05315,0.903789,6.05315,1.14925,5.84054L3.81591,3.53075C4.01812,3.3556,4.05374,3.0908,3.92279,2.88406C3.93219,2.73496,3.87113,2.58315,3.73964,2.46925L1.07298,0.159458Z"
+              stroke="none"
+              stroke-opacity="0"
+            />
           </svg>
         </div>
-        {
-          popoverKey() === 'mode' && (
-            <List class="list">
-              {
-                modes().map(data => (
-                  <li
-                    onClick={() => {
-                      setModeIcon(data.key)
-                      setMode(data.key)
-                      props.onModeChange(data.key)
-                      setPopoverKey('')
-                    }}>
-                    <Icon name={data.key}/>
-                    <span style="padding-left:8px">{data.text}</span>
-                  </li>
-                ))
-              }
-            </List>
-          )
-        }
+        {popoverKey() === 'mode' && (
+          <List class="list">
+            {modes().map((data) => (
+              <li
+                onClick={() => {
+                  setModeIcon(data.key)
+                  setMode(data.key)
+                  props.onModeChange(data.key)
+                  setPopoverKey('')
+                }}
+              >
+                <Icon name={data.key} />
+                <span style="padding-left:8px">{data.text}</span>
+              </li>
+            ))}
+          </List>
+        )}
       </div>
-      <div
-        class="item">
+      <div class="item">
         <span
           style="width:32px;height:32px"
           onClick={() => {
             const currentLock = !lock()
             setLock(currentLock)
             props.onLockChange(currentLock)
-          }}>
-          {
-            lock() ? <Icon name="lock"/> : <Icon name="unlock" />
-          }
+          }}
+        >
+          {lock() ? <Icon name="lock" /> : <Icon name="unlock" />}
         </span>
       </div>
-      <div
-        class="item">
+      <div class="item">
         <span
           style="width:32px;height:32px"
           onClick={() => {
             const v = !visible()
             setVisible(v)
             props.onVisibleChange(v)
-          }}>
-          {
-            visible() ? <Icon name="visible" /> : <Icon name="invisible" />
-          }
+          }}
+        >
+          {visible() ? <Icon name="visible" /> : <Icon name="invisible" />}
         </span>
       </div>
-      <span class="split-line"/>
-      <div
-        class="item">
+      <span class="split-line" />
+      <div class="item">
         <span
           style="width:32px;height:32px"
-          onClick={() => { props.onRemoveClick(GROUP_ID) }}>
+          onClick={() => {
+            props.onRemoveClick(GROUP_ID)
+          }}
+        >
           <Icon name="remove" />
         </span>
       </div>

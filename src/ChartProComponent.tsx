@@ -69,6 +69,7 @@ import {
   type Persist,
 } from './types'
 import AlarmLine from './alarm/alarm-overlay'
+import TrendLine from './extension/trendline'
 
 type NullableProps = 'onPersistChange'|'onRequestPersist'|'persist'
 export interface ChartProComponentProps
@@ -555,6 +556,47 @@ const ChartProComponent: Component<ChartProComponentProps> = (props) => {
     }
     canvas.addEventListener('mouseup', savePersist)
     canvas.addEventListener('touchend', savePersist)
+
+    // 检查URL hash中是否有趋势线数据
+    if (window.location.hash.includes('trendline=')) {
+      try {
+        const hashMatch = window.location.hash.match(/trendline=([^&]+)/)
+        if (hashMatch && hashMatch[1]) {
+          let hashData = JSON.parse(atob(hashMatch[1]))
+          hashData = Array.isArray(hashData) ? hashData : [hashData]
+          for (const tl of hashData) {
+            if (tl.type === 'trendline' && tl.points) {
+              // 延迟创建趋势线，确保图表已经加载完成
+              setTimeout(() => {
+                let dl = widget
+                  ?.getDataList() ??[]
+                 let x1= dl.findIndex((d) => d.timestamp === tl.point1.timestamp)
+                 let x2= dl.findIndex((d) => d.timestamp === tl.point2.timestamp)
+                createOverlay({
+                  name: TrendLine.name,
+                  id: 'trendline',
+                  groupId: 'trendline',
+                  points: tl.points,
+                  onDoubleClick: (e) => {
+                    if (confirm('确定删除该趋势线？')) {
+                      widget?.removeOverlay(e.overlay.id)
+                      setOverlays(
+                        overlays().filter(
+                          (overlay) => overlay.id !== e.overlay.id
+                        )
+                      )
+                    }
+                    return true
+                  },
+                })
+              }, 1000)
+            }
+          }
+        }
+      } catch (error) {
+        console.error('解析URL hash中的趋势线数据失败:', error)
+      }
+    }
   })
 
   onCleanup(() => {
@@ -848,23 +890,6 @@ const ChartProComponent: Component<ChartProComponentProps> = (props) => {
         spread={drawingBarVisible()}
         period={period()}
         periods={props.periods}
-        onAlarmClick={async () => {
-          createOverlay({
-            name: AlarmLine.name, // 预警线
-            visible: true,
-            groupId: 'alarm',
-            mode: OverlayMode.Normal,
-            onDoubleClick: (e) => {
-              if (confirm('确定删除该预警线？')) {
-                widget?.removeOverlay(e.overlay.id)
-                setOverlays(
-                  overlays().filter((overlay) => overlay.id !== e.overlay.id)
-                )
-              }
-              return true
-            },
-          })
-        }}
         onMenuClick={async () => {
           try {
             await startTransition(() =>
@@ -924,6 +949,41 @@ const ChartProComponent: Component<ChartProComponentProps> = (props) => {
               setOverlays(
                 overlays().filter((overlay) => overlay.groupId !== groupId)
               )
+            }}
+            onAlarmClick={async () => {
+              createOverlay({
+                name: AlarmLine.name, // 预警线
+                visible: true,
+                groupId: 'alarm',
+                mode: OverlayMode.Normal,
+                onDoubleClick: (e) => {
+                  if (confirm('确定删除该预警线？')) {
+                    widget?.removeOverlay(e.overlay.id)
+                    setOverlays(
+                      overlays().filter((overlay) => overlay.id !== e.overlay.id)
+                    )
+                  }
+                  return true
+                },
+              })
+            }}
+            onTrendLineClick={async () => {
+              // 启动趋势线绘制模式，与绘图栏保持一致
+              createOverlay({
+                name: TrendLine.name, // 趋势线
+                groupId: 'trendline',
+                id: 'trendline',
+                mode: OverlayMode.Normal,
+                onDoubleClick: (e) => {
+                  if (confirm('确定删除该趋势线？')) {
+                    widget?.removeOverlay(e.overlay.id)
+                    setOverlays(
+                      overlays().filter((overlay) => overlay.id !== e.overlay.id)
+                    )
+                  }
+                  return true
+                },
+              })
             }}
           />
         </Show>

@@ -44,6 +44,8 @@ import eightWaves from './eightWaves'
 import anyWaves from './anyWaves'
 import abcd from './abcd'
 import xabcd from './xabcd'
+import trendLine from './trendLine'
+import alarm from './alarm'
 
 import weakMagnet from './weakMagnet'
 import strongMagnet from './strongMagnet'
@@ -91,6 +93,8 @@ export const mapping = {
   anyWaves,
   abcd,
   xabcd,
+  trendLine,
+  alarm,
   weak_magnet: weakMagnet,
   strong_magnet: strongMagnet,
   lock,
@@ -112,7 +116,7 @@ export function createSingleLineOptions (locale: string): SelectDataSourceItem[]
     { key: 'rayLine', text: i18n('ray_line', locale) },
     { key: 'segment', text: i18n('segment', locale) },
     { key: 'arrow', text: i18n('arrow', locale) },
-    { key: 'priceLine', text: i18n('price_line', locale) }
+    { key: 'priceLine', text: i18n('price_line', locale) },
   ]
 }
 

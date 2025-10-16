@@ -27,19 +27,19 @@ export default function setupApp (root: HTMLDivElement) {
     datafeed: new DefaultDatafeed('fgBqakYElb8niRTDWi9WXK7XdOdVGG2E'),
   }
   let pro=new KLineChartPro(options)
-  const savePersist = () => {
-    const persist = pro.getChartApi().getPersist()
-    console.log('savePersist', persist)
-    localStorage.setItem('persist', JSON.stringify(persist))
-  }
-  window.addEventListener('beforeunload', savePersist)
-  ;(window as any).savePersist = savePersist
-  window.addEventListener('load', () => {
-    const persistStr = localStorage.getItem('persist')
-    if (persistStr) {
-      const persist = JSON.parse(persistStr)
-      console.log('loadPersist', persist)
-      pro.getChartApi().setPersist(persist)
-    }
-  })
+  // const savePersist = () => {
+  //   const persist = pro.getChartApi().getPersist()
+  //   console.log('savePersist', persist)
+  //   localStorage.setItem('persist', JSON.stringify(persist))
+  // }
+  // window.addEventListener('beforeunload', savePersist)
+  // ;(window as any).savePersist = savePersist
+  // window.addEventListener('load', () => {
+  //   const persistStr = localStorage.getItem('persist')
+  //   if (persistStr) {
+  //     const persist = JSON.parse(persistStr)
+  //     console.log('loadPersist', persist)
+  //     pro.getChartApi().setPersist(persist)
+  //   }
+  // })
 }
